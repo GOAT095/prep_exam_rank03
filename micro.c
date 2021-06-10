@@ -64,11 +64,6 @@ char *get_zone(FILE *file, t_zone *zone)
     return (array);
 }
 
-int check_tmp(t_list *tmp)
-{
-    return ((tmp->height > 0.00000000 && tmp->width > 0.00000000) && (tmp->type == 'r' || tmp->type == 'R'));
-}
-
 int is_rec(float y, float x, t_list *tmp)
 {
     float check = 1.00000000;
@@ -106,7 +101,7 @@ int drawing(FILE *file, char **draw, t_zone *zone)
 
     while ((count = fscanf(file, "%c %f %f %f %f %c\n", &tmp.type, &tmp.x, &tmp.y, &tmp.width, &tmp.height, &tmp.color)) == 6)
     {
-        if (!(check_tmp(&tmp)))
+        if (!((tmp.height > 0.00000000 && tmp.width > 0.00000000) && (tmp.type == 'r' || tmp.type == 'R')))
             return (0);
         get_draw(draw, &tmp, zone);
     }
