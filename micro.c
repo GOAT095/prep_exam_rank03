@@ -64,11 +64,6 @@ char *get_zone(FILE *file, t_zone *zone)
     return (array);
 }
 
-int check_tmp(t_list *tmp)
-{
-    return ((tmp->height > 0.00000000 && tmp->width > 0.00000000) && (tmp->type == 'r' || tmp->type == 'R'));
-}
-
 int is_rec(float y, float x, t_list *tmp)
 {
     float check = 1.00000000;
