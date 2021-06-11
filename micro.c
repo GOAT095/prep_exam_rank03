@@ -53,8 +53,7 @@ char *get_zone(FILE *file, t_zone *zone)
         return (NULL);
     if (zone->width <= 0 || zone->width > 300 || zone->height <= 0 || zone->height > 300)
         return (NULL);
-    if (!(array = (char *)malloc(sizeof(char) * (zone->width * zone->height))))
-        return (NULL);
+    array = (char *)malloc(sizeof(char) * (zone->width * zone->height));
     i = 0;
     while (i < (zone->width * zone->height))
     {
@@ -62,11 +61,6 @@ char *get_zone(FILE *file, t_zone *zone)
         i++;
     }
     return (array);
-}
-
-int check_tmp(t_list *tmp)
-{
-    return ((tmp->height > 0.00000000 && tmp->width > 0.00000000) && (tmp->type == 'r' || tmp->type == 'R'));
 }
 
 int is_rec(float y, float x, t_list *tmp)

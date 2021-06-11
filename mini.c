@@ -52,8 +52,7 @@ char *get_zone(FILE *file, t_zone *zone)
         return (NULL);
     if (zone->width <= 0 || zone->width > 300 || zone->height <= 0 || zone->height > 300)
         return (NULL);
-    if (!(array = (char *)malloc(sizeof(char) * (zone->width * zone->height))))
-        return (NULL);
+    array = (char *)malloc(sizeof(char) * (zone->width * zone->height));
     i = 0;
     while (i < (zone->width * zone->height))
     {
