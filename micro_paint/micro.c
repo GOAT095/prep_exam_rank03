@@ -1,7 +1,6 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
-#include <math.h>
+#include <stdlib.h>
 
 typedef struct s_zone
 {
@@ -12,16 +11,18 @@ typedef struct s_zone
 
 typedef struct s_list
 {
-    char type;
-    float x;
-    float y;
-    float radius;
-    char color;
+	char	type;
+	float	x;
+	float	y;
+	float	width;
+	float	height;
+	char	color;
 } t_list;
 
 int ft_strlen(char *str)
 {
     int i = 0;
+
     if (!str)
         return (i);
     while (str[i])
@@ -32,14 +33,14 @@ int ft_strlen(char *str)
 int fail(char *str)
 {
     write(1, str, ft_strlen(str));
-    return(1);
+    return (1);
 }
 
-int free_all(FILE *file, char *str)
+int free_all(FILE *file, char *draw)
 {
     fclose(file);
-    if (str)
-        free(str);
+    if (draw)
+        free(draw);
     return (1);
 }
 
@@ -52,7 +53,8 @@ char *get_zone(FILE *file, t_zone *zone)
         return (NULL);
     if (zone->width <= 0 || zone->width > 300 || zone->height <= 0 || zone->height > 300)
         return (NULL);
-    array = (char *)malloc(sizeof(char) * (zone->width * zone->height));
+    if (!(array = (char *)malloc(sizeof(char) * (zone->width * zone->height))))
+        return (NULL);
     i = 0;
     while (i < (zone->width * zone->height))
     {
@@ -62,24 +64,19 @@ char *get_zone(FILE *file, t_zone *zone)
     return (array);
 }
 
-int is_rad(float x, float y, t_list *tmp)
+int is_rec(float y, float x, t_list *tmp)
 {
-    float dist;
-
-    dist = sqrtf(((x - tmp->x) * (x - tmp->x)) + ((y - tmp->y) * (y - tmp->y)));
-
-    if (dist <= tmp->radius)
-    {
-        if ((tmp->radius - dist) < 1.00000000)
-            return (2);
-        return (1);
-    }
-    return (0);
+    float check = 1.00000000;
+    if ((x < tmp->x) || (tmp->x + tmp->width < x) || (y < tmp->y) || (tmp->y + tmp->height < y))
+        return (0);
+    if (((x - tmp->x) < check) || ((tmp->x + tmp->width) - x < check) || ((y - tmp->y) < check) || ((tmp->y + tmp->height) - y < check))
+        return (2);
+    return (1);
 }
 
-void get_draw(t_list *tmp, t_zone *zone, char *draw)
+void get_draw(char **draw, t_list *tmp, t_zone *zone)
 {
-    int x, y, rad;
+    int x, y, rec;
 
     y = 0;
     while (y < zone->height)
@@ -87,25 +84,25 @@ void get_draw(t_list *tmp, t_zone *zone, char *draw)
         x = 0;
         while (x < zone->width)
         {
-            rad = is_rad((float)x, (float)y, tmp);
-            if ((rad == 2 && tmp->type == 'c') || (rad && tmp->type == 'C'))
-                draw[(y * zone->width) + x] = tmp->color;
+            rec = is_rec(y, x, tmp);
+            if ((tmp->type == 'r' && rec == 2) || (tmp->type == 'R' && rec))
+                (*draw)[(y * zone->width) + x] = tmp->color;
             x++;
         }
         y++;
     }
 }
 
-int drawing(FILE *file, t_zone *zone, char *draw)
+int drawing(FILE *file, char **draw, t_zone *zone)
 {
     t_list tmp;
     int count;
 
-    while ((count = fscanf(file, "%c %f %f %f %c\n", &tmp.type, &tmp.x, &tmp.y, &tmp.radius, &tmp.color)) == 5)
+    while ((count = fscanf(file, "%c %f %f %f %f %c\n", &tmp.type, &tmp.x, &tmp.y, &tmp.width, &tmp.height, &tmp.color)) == 6)
     {
-        if (tmp.radius <= 0.00000000 && (tmp.type != 'c' || tmp.type != 'C'))
+        if (!((tmp.height > 0.00000000 && tmp.width > 0.00000000) && (tmp.type == 'r' || tmp.type == 'R')))
             return (0);
-        get_draw(&tmp, zone, draw);
+        get_draw(draw, &tmp, zone);
     }
     if (count != (-1))
         return (0);
@@ -126,9 +123,9 @@ void print_draw(char *draw, t_zone *zone)
 
 int main(int ac, char **av)
 {
-    t_zone zone;
-    char *draw;
     FILE *file;
+    char *draw;
+    t_zone zone;
 
     if (ac != 2)
         return (fail("Error: argument\n"));
@@ -136,7 +133,7 @@ int main(int ac, char **av)
         return (fail("Error: Operation file corrupted\n"));
     if (!(draw = get_zone(file, &zone)))
         return (free_all(file, NULL) && fail("Error: Operation file corrupted\n"));
-    if (!(drawing(file, &zone, draw)))
+    if (!(drawing(file, &draw, &zone)))
         return (free_all(file, draw) && fail("Error: Operation file corrupted\n"));
     print_draw(draw, &zone);
     free_all(file, draw);
